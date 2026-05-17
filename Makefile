@@ -1,13 +1,12 @@
-# Tên của dự án sau khi xuất bản
 TWEAK_NAME = PvZFusionMenu
 
-# Danh sách các tệp tin mã nguồn cần biên dịch trong dự án của bạn
+# Khai báo các tệp tin nguồn tham gia vào quá trình dịch
 PvZFusionMenu_FILES = ImGuiDrawView.mm $(wildcard KittyMemory/*.cpp)
 
-# Các thư viện hệ thống cần thiết để giao diện đồ họa hiển thị trên màn hình iOS
+# Các thư viện giao diện hệ thống của iOS
 PvZFusionMenu_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore
 
-# Thiết lập chế độ biên dịch và kiến trúc chip xử lý cho thiết bị iOS 64-bit
+# Biên dịch cấu trúc chip 64-bit cho các dòng iPhone đời mới
 ARCHS = arm64
 TARGET = iphone:clang:latest:14.0
 
