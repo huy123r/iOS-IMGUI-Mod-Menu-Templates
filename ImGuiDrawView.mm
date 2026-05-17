@@ -105,7 +105,6 @@ void RenderPvZModMenu() {
 // -----------------------------------------------------------------------------
 // KHU VỰC 5: LIÊN KẾT HOOK (CAN THIỆP THAY ĐỔI LOGIC GAME)
 // -----------------------------------------------------------------------------
-
 int (*old_GetSun)(void* instance);
 int new_GetSun(void* instance) {
     if (bInfiniteSun) {
@@ -123,5 +122,5 @@ bool new_IsReady(void* instance) {
 }
 
 __attribute__((constructor)) static void initialize() {
-    // Khi chạy trên thiết bị thực tế, các lệnh Hook sẽ được kích hoạt tại đây
+    // Khi chạy trên thiết bị thực tế, các lệnh Hook định vị bằng Offset sẽ được cấu hình tại đây
 }
