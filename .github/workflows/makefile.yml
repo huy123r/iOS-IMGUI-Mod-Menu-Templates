@@ -13,12 +13,8 @@ jobs:
       with:
         submodules: false
 
-    - name: Thiết lập môi trường và Tạo ldid giả lập
+    - name: Thiết lập môi trường biên dịch
       run: |
-        sudo echo '#!/bin/sh' > /usr/local/bin/ldid
-        sudo echo 'echo "Fake ldid success!"' >> /usr/local/bin/ldid
-        sudo chmod +x /usr/local/bin/ldid
-
         git clone --recursive https://github.com/theos/theos.git ~/theos
         curl -LO https://github.com/theos/sdks/archive/refs/heads/master.zip
         unzip master.zip
@@ -30,7 +26,12 @@ jobs:
         export THEOS=$HOME/theos
         make FINALPACKAGE=1
 
-    # ĐOẠN ĐƯỜNG DẪN MỚI ĐÃ SỬA ĐỂ QUÉT RỘNG HƠN (TÌM THẤY FILE 100%):
+    # BƯỚC MỚI THÊM: Sử dụng công cụ codesign chính thức của Apple trên máy ảo để ký Ad-hoc cho file dylib
+    - name: Ký chứng chỉ bảo mật Ad-hoc tự động
+      run: |
+        echo "Tiến hành ký Ad-hoc (cdhash) cho file thành phẩm..."
+        find .theos/obj/ -name "*.dylib" -exec codesign -f -s - {} \;
+
     - name: Đẩy file dylib thành phẩm lên Artifacts
       uses: actions/upload-artifact@v4
       with:
