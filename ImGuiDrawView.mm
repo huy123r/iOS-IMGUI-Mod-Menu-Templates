@@ -111,7 +111,7 @@ void RenderPvZModMenu() {
         ImGui::Separator();
         ImGui::Spacing();
         
-        ImGui::TextDisabled("Hệ thống vận hành an toàn qua Sideloadly.");
+        ImGui::Text("Hệ thống vận hành an toàn qua Sideloadly.");
         
         ImGui::End();
     }
