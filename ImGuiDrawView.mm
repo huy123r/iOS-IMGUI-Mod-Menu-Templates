@@ -138,10 +138,10 @@ void RenderPvZModMenu() {
 @end
 
 // -----------------------------------------------------------------------------
-// KHU VỰC 5: LIÊN KẾT HOOK (CAN THIỆP THAY ĐỔI LOGIC GAME)
+// KHU VỰC 5: LIÊN KẾT HOOK (CAN THIỆP THAY ĐỔI LOGIC GAME) - ĐÃ SỬA LỖI
 // -----------------------------------------------------------------------------
 
-// Hàm thay thế lượng Mặt Trời gốc
+// Cấu trúc chuẩn cho hàm lấy số lượng Mặt Trời
 int (*old_GetSun)(void* instance);
 int new_GetSun(void* instance) {
     if (bInfiniteSun) {
@@ -150,12 +150,13 @@ int new_GetSun(void* instance) {
     return old_GetSun(instance); // Tắt menu thì trả về giá trị gốc của màn chơi
 }
 
-// Hàm thay thế bộ đếm thời gian hồi chiêu gốc
-bool (*old_IsReady)(void* instance) {
+// Cấu trúc chuẩn cho hàm xử lý Hồi Chiêu (ĐÃ SỬA)
+bool (*old_IsReady)(void* instance); // Con trỏ hàm gốc
+bool new_IsReady(void* instance) {  // Hàm thay thế mới chứa logic
     if (bNoCooldown) {
         return true; // Bật menu thì luôn báo thẻ bài cây trồng sẵn sàng
     }
-    return old_IsReady(instance); // Tắt menu thì phải đợi đếm giây bình thường
+    return old_IsReady(instance); // Tắt menu thì trả về giá trị đếm giây gốc
 }
 
 // Hàm khởi tạo tự động chạy khi file dylib được game nạp lên RAM
@@ -163,4 +164,5 @@ __attribute__((constructor)) static void initialize() {
     // Thực hiện liên kết địa chỉ bộ nhớ (Offset) của game tại đây khi phân tích cấu trúc nhị phân.
     // Ví dụ lệnh đăng ký của Substrate:
     // MSHookFunction((void*)(0x10000000), (void*)new_GetSun, (void**)&old_GetSun);
+    // MSHookFunction((void*)(0x10000004), (void*)new_IsReady, (void**)&old_IsReady);
 }
