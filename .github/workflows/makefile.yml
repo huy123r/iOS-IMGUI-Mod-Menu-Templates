@@ -1,5 +1,34 @@
-- name: Tiến hành đóng gói và xuất file dylib thành phẩm
+name: Biên Dịch Menu PvZ Fusion iOS
+
+on:
+  workflow_dispatch: # Kích hoạt nút bấm chạy thủ công
+
+jobs:
+  build:
+    runs-on: macos-14 # Sử dụng môi trường máy Mac tiêu chuẩn ổn định
+
+    steps:
+    - name: Tải mã nguồn từ kho lưu trữ
+      uses: actions/checkout@v4
+      with:
+        submodules: false # Tắt tính năng submodule tự động để tránh lỗi 128
+
+    - name: Thiết lập môi trường và Tải SDK trực tiếp
+      run: |
+        # 1. Tải hệ thống khung biên dịch Theos
+        git clone --recursive https://github.com/theos/theos.git ~/theos
+        
+        # 2. Tải trực tiếp gói SDK iOS từ máy chủ lưu trữ (Bỏ qua Git Clone để tránh lỗi xác thực)
+        curl -LO https://github.com/theos/sdks/archive/refs/heads/master.zip
+        unzip master.zip
+        mv sdks-master/* ~/theos/sdks/
+        
+        # 3. Đăng ký các biến đường dẫn vào hệ thống máy ảo
+        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+
+    - name: Tiến hành đóng gói và xuất file dylib thành phẩm
       run: |
         export THEOS=$HOME/theos
-        # Thêm cờ lệnh bẻ hướng biên dịch trực tiếp ra file đích thay vì đóng gói gói cài đặt (.deb)
-        make FINALPACKAGE=1
+        
+        # Chạy lệnh biên dịch gốc để tạo file liên kết động (.dylib)
+        make
