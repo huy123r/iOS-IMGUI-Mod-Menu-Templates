@@ -1,231 +1,45 @@
-
-#import "Esp/ImGuiDrawView.h"
-#import <Metal/Metal.h>
-#import <MetalKit/MetalKit.h>
-#import <Foundation/Foundation.h>
-#include "KittyMemory/imgui.h"
-#include "KittyMemory/imgui_impl_metal.h"
-#import <Foundation/Foundation.h>
-#import "Esp/CaptainHook.h"
-#import "x2nios.h"
-
-#define kWidth  [UIScreen mainScreen].bounds.size.width
-#define kHeight [UIScreen mainScreen].bounds.size.height
-#define kScale [UIScreen mainScreen].scale
-#define kTest   0 
-#define g 0.86602540378444 
-
-@interface ImGuiDrawView () <MTKViewDelegate>
-//@property (nonatomic, strong) IBOutlet MTKView *mtkView;
-@property (nonatomic, strong) id <MTLDevice> device;
-@property (nonatomic, strong) id <MTLCommandQueue> commandQueue;
-@end
-
-@implementation ImGuiDrawView
-
-
-static bool MenDeal = true;
-
-
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-
-    _device = MTLCreateSystemDefaultDevice();
-    _commandQueue = [_device newCommandQueue];
-
-    if (!self.device) abort();
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-    ImGui::StyleColorsClassic();
+// Thêm hàm này vào trong tệp ImGuiDrawView.mm của bạn
+void SetBeautifulStyle() {
+    ImGuiStyle& style = ImGui::GetStyle();
     
-    NSString *FontPath = @"/System/Library/Fonts/AppFonts/Charter.ttc";
-    io.Fonts->AddFontFromFileTTF(FontPath.UTF8String, 40.f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    // ==========================================
+    // CẤU HÌNH ĐỘ BO GÓC VÀ KÍCH THƯỚC (Dễ bấm trên màn hình cảm ứng)
+    // ==========================================
+    style.WindowPadding          = ImVec2(15.0f, 15.0f); // Khoảng cách từ viền vào trong
+    style.FramePadding           = ImVec2(12.0f, 6.0f);  // Kích thước các ô bấm, hộp chọn
+    style.ItemSpacing            = ImVec2(10.0f, 10.0f); // Khoảng cách giữa các dòng
+    style.WindowRounding         = 12.0f;                // Bo tròn góc sổ menu (Nhìn hiện đại)
+    style.FrameRounding          = 6.0f;                 // Bo tròn góc các ô nhập/Checkbox
+    style.ButtonTextAlign        = ImVec2(0.5f, 0.5f);   // Căn chữ ở giữa nút bấm
+
+    // ==========================================
+    // CẤU HÌNH MÀU SẮC (Phong cách Dark & Neon Green)
+    // ==========================================
+    ImVec4* colors = style.Colors;
     
-    ImGui_ImplMetal_Init(_device);
-
-    return self;
-}
-
-+ (void)showChange:(BOOL)open
-{
-    MenDeal = open;
-}
-
-- (MTKView *)mtkView
-{
-    return (MTKView *)self.view;
-}
-
-- (void)loadView
-{
-
- 
-
-    CGFloat w = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.width;
-    CGFloat h = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height;
-    self.view = [[MTKView alloc] initWithFrame:CGRectMake(0, 0, w, h)];
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Thực hiện bất kỳ thiết lập bổ sung nào sau khi tải chế độ xem.
+    // Màu nền chính của Menu (Màu xám tối / đen mờ)
+    colors[ImGuiCol_WindowBg]             = ImVec4(0.10f, 0.10f, 0.12f, 0.95f); 
     
-    self.mtkView.device = self.device;
-    self.mtkView.delegate = self;
-    self.mtkView.clearColor = MTLClearColorMake(0, 0, 0, 0);
-    self.mtkView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
-    self.mtkView.clipsToBounds = YES;
-
-
- 
-
-}
-
-
-
-#pragma mark - Interaction
-
-- (void)updateIOWithTouchEvent:(UIEvent *)event
-{
-    UITouch *anyTouch = event.allTouches.anyObject;
-    CGPoint touchLocation = [anyTouch locationInView:self.view];
-    ImGuiIO &io = ImGui::GetIO();
-    io.MousePos = ImVec2(touchLocation.x, touchLocation.y);
-
-    BOOL hasActiveTouch = NO;
-    for (UITouch *touch in event.allTouches)
-    {
-        if (touch.phase != UITouchPhaseEnded && touch.phase != UITouchPhaseCancelled)
-        {
-            hasActiveTouch = YES;
-            break;
-        }
-    }
-    io.MouseDown[0] = hasActiveTouch;
-}
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-#pragma mark - MTKViewDelegate
-
-- (void)drawInMTKView:(MTKView*)view
-{
-   
+    // Màu thanh tiêu đề ở trên cùng
+    colors[ImGuiCol_TitleBg]              = ImVec4(0.16f, 0.16f, 0.20f, 1.00f);
+    colors[ImGuiCol_TitleBgActive]        = ImVec4(0.20f, 0.20f, 0.25f, 1.00f);
     
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize.x = view.bounds.size.width;
-    io.DisplaySize.y = view.bounds.size.height;
-
-    CGFloat framebufferScale = view.window.screen.scale ?: UIScreen.mainScreen.scale;
-    io.DisplayFramebufferScale = ImVec2(framebufferScale, framebufferScale);
-    io.DeltaTime = 1 / float(view.preferredFramesPerSecond ?: 60);
+    // Màu chữ hiển thị
+    colors[ImGuiCol_Text]                 = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+    colors[ImGuiCol_TextDisabled]         = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
     
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    // Màu của các khung chứa (Nền của Checkbox, Slider)
+    colors[ImGuiCol_FrameBg]              = ImVec4(0.22f, 0.22f, 0.26f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered]       = ImVec4(0.28f, 0.28f, 0.32f, 1.00f);
+    colors[ImGuiCol_FrameBgActive]        = ImVec4(0.35f, 0.35f, 0.40f, 1.00f);
     
-
-
-    static bool show_s0 = false;    
-    static bool show_s1 = false;    
-    static bool show_s2 = false;    
-    static bool show_s3 = false;    
-    static bool show_s4 = false;    
-    static bool show_s5 = false;    
-    static bool show_s6 = false;                    
-    static bool show_s7 = false;        
-    static bool show_s8 = false;      
-    static bool show_s9 = false;     
-    static bool show_s10 = false;     
-    static bool show_s11 = false;     
-    static bool show_s12 = false;     
-
+    // Màu sắc điểm nhấn khi BẬT tính năng (Màu Xanh Neon sáng)
+    colors[ImGuiCol_CheckMark]            = ImVec4(0.00f, 0.90f, 0.45f, 1.00f); // Dấu tích xanh
+    colors[ImGuiCol_SliderGrab]           = ImVec4(0.00f, 0.90f, 0.45f, 1.00f);
+    colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.00f, 1.00f, 0.50f, 1.00f);
     
-    
-        
-        if (MenDeal == true) {
-            [self.view setUserInteractionEnabled:YES];
-        } else if (MenDeal == false) {
-            [self.view setUserInteractionEnabled:NO];
-        }
-
-        MTLRenderPassDescriptor* renderPassDescriptor = view.currentRenderPassDescriptor;
-        if (renderPassDescriptor != nil)
-        {
-            id <MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
-            [renderEncoder pushDebugGroup:@"ImGui Jane"];
-
-            ImGui_ImplMetal_NewFrame(renderPassDescriptor);
-            ImGui::NewFrame();
-            
-            ImFont* font = ImGui::GetFont();
-            font->Scale = 15.f / font->FontSize;
-            
-            CGFloat x = (([UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.width) - 360) / 2;
-            CGFloat y = (([UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height) - 300) / 2;
-            
-            ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(360, 300), ImGuiCond_FirstUseEver);
-            
-            if (MenDeal == true)
-            {                
-                ImGui::Begin("X2NIOSVN", &MenDeal);
-                ImGui::Text("~>Use 3 Fingers Click 3 Times Open Menu\n~>2 Finger Tap Screen 2 Times Hide Menu\n\n~>Open In Lobby");
-                
-             
-        
-          
-ImGui::Text("All rights reserved %.3f ms/frame (%.1f FPS)", 500.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-
-                ImGui::End();
-                
-            }
-            ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-
-
-
-//chức năng để ở đây
-
-
-
-            ImGui::Render();
-            ImDrawData* draw_data = ImGui::GetDrawData();
-            ImGui_ImplMetal_RenderDrawData(draw_data, commandBuffer, renderEncoder);
-          
-            [renderEncoder popDebugGroup];
-            [renderEncoder endEncoding];
-
-            [commandBuffer presentDrawable:view.currentDrawable];
-        }
-
-        [commandBuffer commit];
+    // Màu sắc của nút bấm (Buttons)
+    colors[ImGuiCol_Button]               = ImVec4(0.22f, 0.22f, 0.26f, 1.00f);
+    colors[ImGuiCol_ButtonHovered]        = ImVec4(0.00f, 0.75f, 0.38f, 1.00f); // Di chuột/chạm vào đổi sang xanh
+    colors[ImGuiCol_ButtonActive]         = ImVec4(0.00f, 0.60f, 0.30f, 1.00f);
 }
-
-- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size
-{
-    
-}
-
-@end
-
