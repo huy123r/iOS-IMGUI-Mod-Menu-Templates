@@ -5,29 +5,30 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14 # Chỉ định rõ phiên bản macOS chứa Xcode tương thích
+    runs-on: macos-14 # Sử dụng môi trường máy Mac tiêu chuẩn ổn định
 
     steps:
     - name: Tải mã nguồn từ kho lưu trữ
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: false # Tắt tính năng submodule tự động để tránh lỗi 128
 
-    - name: Thiết lập môi trường biên dịch Theos và Tải SDK iOS
+    - name: Thiết lập môi trường và Tải SDK trực tiếp
       run: |
         # 1. Tải hệ thống khung biên dịch Theos
         git clone --recursive https://github.com/theos/theos.git ~/theos
         
-        # 2. Tải bộ SDK iOS vá lỗi dành cho trình biên dịch (Sử dụng bản SDK iOS 16.5 phổ biến)
-        git clone https://github.com/theos/sdks.git ~/theos/sdks
+        # 2. Tải trực tiếp gói SDK iOS từ máy chủ lưu trữ (Bỏ qua Git Clone để tránh lỗi xác thực)
+        curl -LO https://github.com/theos/sdks/archive/refs/heads/master.zip
+        unzip master.zip
+        mv sdks-master/* ~/theos/sdks/
         
         # 3. Đăng ký các biến đường dẫn vào hệ thống máy ảo
         echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
-    - name: Tiến hành đóng gói và biên dịch Menu thành file dylib
+    - name: Tiến hành đóng gói và xuất file dylib thành phẩm
       run: |
-        # Thiết lập lại biến môi trường cho phiên chạy hiện tại
         export THEOS=$HOME/theos
         
-        # Gọi lệnh biên dịch hệ thống để đóng gói dự án
+        # Chạy lệnh biên dịch gốc để tạo file liên kết động (.dylib)
         make
