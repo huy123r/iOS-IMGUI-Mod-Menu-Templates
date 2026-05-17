@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest # Sử dụng máy chủ ảo macOS để biên dịch Tweak iOS
+    runs-on: macos-latest # Sử dụng máy chủ ảo macOS để có sẵn SDK iOS gốc
 
     steps:
     - name: Tải mã nguồn từ kho lưu trữ
@@ -13,18 +13,21 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Thiết lập môi trường biên dịch Theos
+    - name: Thiết lập môi trường biên dịch Theos và SDK iOS
       run: |
-        bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-        echo "THEOS=/opt/theos" >> $GITHUB_ENV
+        # Tải framework biên dịch Theos về máy ảo
+        git clone --recursive https://github.com/theos/theos.git ~/theos
+        
+        # Cài đặt bộ công cụ nén dữ liệu cần thiết cho tệp .deb/.dylib
+        brew install lz4 xz zstd
+        
+        # Lưu biến môi trường THEOS vào hệ thống GitHub Actions
+        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
-    - name: Tiến hành đóng gói và biên dịch Menu
+    - name: Tiến hành đóng gói và biên dịch Menu thành file dylib
       run: |
-        export THEOS=/opt/theos
-        make package FINALPACKAGE=1
-
-    - name: Xuất bản và lưu tệp .dylib về máy tính
-      uses: actions/upload-artifact@v4
-      with:
-        name: Menu-PvZ-Fusion
-        path: .theos/obj/debug/*.dylib # Trích xuất đúng file dylib thành phẩm
+        # Định nghĩa lại đường dẫn cục bộ cho phiên làm việc
+        export THEOS=$HOME/theos
+        
+        # Chạy lệnh biên dịch Tweak và ép xuất trực tiếp file liên kết động (.dylib)
+        make
