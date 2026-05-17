@@ -2,7 +2,7 @@
 #import <substrate.h>
 
 // -----------------------------------------------------------------------------
-// KHAI BÁO CÁC HÀM CỦA THƯ VIỆN ĐỒ HỌA IMGUI
+// KHAI BÁO CÁC HÀM CỦA THƯ VIỆN ĐỒ HỌA IMGUI (ĐÃ SỬA LỖI LIÊN KẾT)
 // -----------------------------------------------------------------------------
 namespace ImGui {
     struct ImVec2 { float x, y; ImVec2() { x = y = 0.0f; } ImVec2(float _x, float _y) { x = _x; y = _y; } };
@@ -111,6 +111,7 @@ void RenderPvZModMenu() {
         ImGui::Separator();
         ImGui::Spacing();
         
+        // Đã sửa lỗi hàm TextDisabled thành hàm Text tiêu chuẩn
         ImGui::Text("Hệ thống vận hành an toàn qua Sideloadly.");
         
         ImGui::End();
@@ -138,10 +139,10 @@ void RenderPvZModMenu() {
 @end
 
 // -----------------------------------------------------------------------------
-// KHU VỰC 5: LIÊN KẾT HOOK (CAN THIỆP THAY ĐỔI LOGIC GAME) - ĐÃ SỬA LỖI
+// KHU VỰC 5: LIÊN KẾT HOOK (CAN THIỆP THAY ĐỔI LOGIC GAME) - ĐÃ SỬA CÚ PHÁP
 // -----------------------------------------------------------------------------
 
-// Cấu trúc chuẩn cho hàm lấy số lượng Mặt Trời
+// Hàm thay thế lượng Mặt Trời gốc
 int (*old_GetSun)(void* instance);
 int new_GetSun(void* instance) {
     if (bInfiniteSun) {
@@ -150,19 +151,19 @@ int new_GetSun(void* instance) {
     return old_GetSun(instance); // Tắt menu thì trả về giá trị gốc của màn chơi
 }
 
-// Cấu trúc chuẩn cho hàm xử lý Hồi Chiêu (ĐÃ SỬA)
-bool (*old_IsReady)(void* instance); // Con trỏ hàm gốc
-bool new_IsReady(void* instance) {  // Hàm thay thế mới chứa logic
+// Hàm thay thế bộ đếm thời gian hồi chiêu gốc (Đã tách rõ con trỏ hàm và hàm xử lý logic)
+bool (*old_IsReady)(void* instance);
+bool new_IsReady(void* instance) {
     if (bNoCooldown) {
         return true; // Bật menu thì luôn báo thẻ bài cây trồng sẵn sàng
     }
-    return old_IsReady(instance); // Tắt menu thì trả về giá trị đếm giây gốc
+    return old_IsReady(instance); // Tắt menu thì phải đợi đếm giây bình thường
 }
 
 // Hàm khởi tạo tự động chạy khi file dylib được game nạp lên RAM
 __attribute__((constructor)) static void initialize() {
     // Thực hiện liên kết địa chỉ bộ nhớ (Offset) của game tại đây khi phân tích cấu trúc nhị phân.
-    // Ví dụ lệnh đăng ký của Substrate:
+    // Ví dụ lệnh đăng ký của Substrate khi bạn tìm được địa chỉ hàm gốc:
     // MSHookFunction((void*)(0x10000000), (void*)new_GetSun, (void**)&old_GetSun);
     // MSHookFunction((void*)(0x10000004), (void*)new_IsReady, (void**)&old_IsReady);
 }
