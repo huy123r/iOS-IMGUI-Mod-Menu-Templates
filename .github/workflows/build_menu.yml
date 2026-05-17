@@ -1,5 +1,0 @@
-- name: Tiến hành đóng gói và xuất file dylib thành phẩm
-      run: |
-        export THEOS=$HOME/theos
-        # Thêm cờ lệnh bẻ hướng biên dịch trực tiếp ra file đích thay vì đóng gói gói cài đặt (.deb)
-        make FINALPACKAGE=1
