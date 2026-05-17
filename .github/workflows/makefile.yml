@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14 # Môi trường Mac ảo tiêu chuẩn
+    runs-on: macos-14
 
     steps:
     - name: Tải mã nguồn từ kho lưu trữ
@@ -30,9 +30,11 @@ jobs:
         export THEOS=$HOME/theos
         make FINALPACKAGE=1
 
-    # ĐOẠN CODE MỚI THÊM ĐỂ ĐẨY FILE LÊN GIAO DIỆN WEB CHO BẠN TẢI:
+    # ĐOẠN ĐƯỜNG DẪN MỚI ĐÃ SỬA ĐỂ QUÉT RỘNG HƠN (TÌM THẤY FILE 100%):
     - name: Đẩy file dylib thành phẩm lên Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Menu-PvZ-Fusion-iOS
-        path: .theos/obj/debug/arm64/*.dylib
+        path: |
+          .theos/obj/**/*.dylib
+          packages/*.deb
