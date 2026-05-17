@@ -1,6 +1,6 @@
 TWEAK_NAME = PvZFusionMenu
 
-# Quét toàn bộ các file .cpp và .mm trong dự án
+# Biên dịch các tệp nguồn chính
 PvZFusionMenu_FILES = ImGuiDrawView.mm $(wildcard *.cpp) $(wildcard ImGui/*.cpp) $(wildcard KittyMemory/*.cpp)
 PvZFusionMenu_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore
 PvZFusionMenu_LIBRARIES = substrate
@@ -8,9 +8,9 @@ PvZFusionMenu_LIBRARIES = substrate
 ARCHS = arm64
 TARGET = iphone:clang:latest:14.0
 
-# Bổ sung cờ -fno-modules và -fno-modules-search-all để ép hệ thống dịch C++ truyền thống, sửa sạch lỗi std_ios
-PvZFusionMenu_CFLAGS = -Wno-deprecated-declarations -Wno-error -IKittyMemory -IImGui -fno-modules -fno-modules-search-all
-PvZFusionMenu_CCFLAGS = -std=c++11 -IKittyMemory -IImGui -fno-modules -fno-modules-search-all
+# Sử dụng các cờ tối ưu hóa giúp trình biên dịch ưu tiên gọi thư viện C++ gốc của Apple thay vì tìm trong thư mục con
+PvZFusionMenu_CFLAGS = -Wno-deprecated-declarations -Wno-error -I. -IKittyMemory -IImGui -fno-modules -fno-modules-search-all
+PvZFusionMenu_CCFLAGS = -std=c++11 -I. -IKittyMemory -IImGui -fno-modules -fno-modules-search-all
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS)/makefiles/tweak.mk
