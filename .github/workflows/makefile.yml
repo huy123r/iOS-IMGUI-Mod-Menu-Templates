@@ -1,0 +1,30 @@
+name: Biên Dịch Menu PvZ Fusion iOS
+
+on:
+  workflow_dispatch: # Cho phép bạn bấm nút biên dịch thủ công bất cứ lúc nào
+
+jobs:
+  build:
+    runs-on: macos-latest # Sử dụng máy chủ ảo macOS để có sẵn SDK iOS
+
+    steps:
+    - name: Tải mã nguồn từ kho lưu trữ
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Thiết lập môi trường biên dịch Theos
+      run: |
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+        echo "THEOS=/opt/theos" >> $GITHUB_ENV
+
+    - name: Tiến hành đóng gói và biên dịch Menu
+      run: |
+        export THEOS=/opt/theos
+        make package FINALPACKAGE=1
+
+    - name: Xuất bản và lưu tệp .dylib về máy tính
+      uses: actions/upload-artifact@v3
+      with:
+        name: Menu-PvZ-Fusion
+        path: .theos/obj/debug/*.dylib # Đường dẫn trích xuất file menu sau khi dịch xong
