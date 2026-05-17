@@ -6,9 +6,8 @@ PvZFusionMenu_LIBRARIES = substrate
 
 ARCHS = arm64
 TARGET = iphone:clang:latest:14.0
-
-# Dòng lệnh đã sửa để bẻ hướng lệnh ldid:
-_THEOS_TARGET_SIGNING_COMMAND = echo "Bo qua buoc ky ma dylib"
+# Dòng lệnh bắt buộc phải có để triệt tiêu lỗi ldid command not found:
+_THEOS_TARGET_SIGNING_COMMAND = echo "Bo qua buoc ldid mac dinh"
 
 PvZFusionMenu_CFLAGS = -Wno-deprecated-declarations -Wno-error -I. -IKittyMemory -IImGui -fno-modules -fno-modules-search-all
 PvZFusionMenu_CCFLAGS = -std=c++11 -I. -IKittyMemory -IImGui -fno-modules -fno-modules-search-all
