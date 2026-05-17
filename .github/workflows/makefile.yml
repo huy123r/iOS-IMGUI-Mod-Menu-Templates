@@ -1,11 +1,11 @@
 name: Biên Dịch Menu PvZ Fusion iOS
 
 on:
-  workflow_dispatch: # Cho phép bấm nút chạy thủ công bất cứ lúc nào
+  workflow_dispatch: # Kích hoạt nút bấm chạy thủ công
 
 jobs:
   build:
-    runs-on: macos-latest # Sử dụng máy chủ ảo macOS để có sẵn SDK iOS gốc
+    runs-on: macos-14 # Chỉ định rõ phiên bản macOS chứa Xcode tương thích
 
     steps:
     - name: Tải mã nguồn từ kho lưu trữ
@@ -13,21 +13,21 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Thiết lập môi trường biên dịch Theos và SDK iOS
+    - name: Thiết lập môi trường biên dịch Theos và Tải SDK iOS
       run: |
-        # Tải framework biên dịch Theos về máy ảo
+        # 1. Tải hệ thống khung biên dịch Theos
         git clone --recursive https://github.com/theos/theos.git ~/theos
         
-        # Cài đặt bộ công cụ nén dữ liệu cần thiết cho tệp .deb/.dylib
-        brew install lz4 xz zstd
+        # 2. Tải bộ SDK iOS vá lỗi dành cho trình biên dịch (Sử dụng bản SDK iOS 16.5 phổ biến)
+        git clone https://github.com/theos/sdks.git ~/theos/sdks
         
-        # Lưu biến môi trường THEOS vào hệ thống GitHub Actions
+        # 3. Đăng ký các biến đường dẫn vào hệ thống máy ảo
         echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
     - name: Tiến hành đóng gói và biên dịch Menu thành file dylib
       run: |
-        # Định nghĩa lại đường dẫn cục bộ cho phiên làm việc
+        # Thiết lập lại biến môi trường cho phiên chạy hiện tại
         export THEOS=$HOME/theos
         
-        # Chạy lệnh biên dịch Tweak và ép xuất trực tiếp file liên kết động (.dylib)
+        # Gọi lệnh biên dịch hệ thống để đóng gói dự án
         make
