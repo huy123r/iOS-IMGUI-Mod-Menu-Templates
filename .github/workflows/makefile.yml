@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-14 # Chạy trên máy ảo Mac tiêu chuẩn
 
     steps:
     - name: Tải mã nguồn từ kho lưu trữ
@@ -13,24 +13,29 @@ jobs:
       with:
         submodules: false
 
-    - name: Thiết lập môi trường biên dịch
+    - name: Cài đặt môi trường và ldid chính thức
       run: |
+        # 1. Sử dụng trình quản lý gói Homebrew của Mac để cài đặt công cụ ldid chính chủ
+        echo "=== ĐANG CÀI ĐẶT LDID CHÍNH THỨC ==="
+        brew install ldid
+
+        # 2. Tải và thiết lập hệ thống khung biên dịch Theos
+        echo "=== ĐANG TẢI THEOS HỆ THỐNG ==="
         git clone --recursive https://github.com/theos/theos.git ~/theos
+        
+        # 3. Tải trực tiếp gói SDK iOS từ máy chủ lưu trữ cho Theos
         curl -LO https://github.com/theos/sdks/archive/refs/heads/master.zip
         unzip master.zip
         mv sdks-master/* ~/theos/sdks/
+        
+        # 4. Đăng ký biến môi trường vào hệ thống máy ảo
         echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
     - name: Tiến hành đóng gói và xuất file dylib thành phẩm
       run: |
         export THEOS=$HOME/theos
+        # Tiến hành dịch file, lúc này ldid thật sẽ tự động hoạt động ở cuối tiến trình
         make FINALPACKAGE=1
-
-    # BƯỚC MỚI THÊM: Sử dụng công cụ codesign chính thức của Apple trên máy ảo để ký Ad-hoc cho file dylib
-    - name: Ký chứng chỉ bảo mật Ad-hoc tự động
-      run: |
-        echo "Tiến hành ký Ad-hoc (cdhash) cho file thành phẩm..."
-        find .theos/obj/ -name "*.dylib" -exec codesign -f -s - {} \;
 
     - name: Đẩy file dylib thành phẩm lên Artifacts
       uses: actions/upload-artifact@v4
