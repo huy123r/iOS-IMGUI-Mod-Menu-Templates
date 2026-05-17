@@ -27,7 +27,7 @@ jobs:
         export THEOS=$HOME/theos
         make FINALPACKAGE=1
 
-   - name: Ép ký Ad-hoc chuẩn LiveContainer bằng ldid
+    - name: Ép ký Ad-hoc chuẩn LiveContainer bằng ldid
       run: |
         echo "=== BẮT ĐẦU ĐÓNG DẤU CHỮ KÝ BẢO MẬT BẰNG LDID ==="
         # Lệnh này gọi công cụ ldid đã cài để tạo chữ ký cdhash chuyên dụng cho iOS 15+
